@@ -1,10 +1,19 @@
 package main;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 
 public class HlavníOkno extends javax.swing.JFrame {
 
+    final String ULOZENADATA = "data.bin";
     RodnéČíslo rc;
     ArrayList<Osoba> seznam = new ArrayList<>();
     int pozice = 0;
@@ -14,9 +23,47 @@ public class HlavníOkno extends javax.swing.JFrame {
      */
     public HlavníOkno() {
         initComponents();
-        seznam.add(new Osoba("René Hužva", new RodnéČíslo("966126/0356")));
-        seznam.add(new Osoba("Jane", new RodnéČíslo("966126/0357")));
+        nactiDataZeSouboru();
+        //seznam.add(new Osoba("René Hužva", new RodnéČíslo("966126/0356")));
+        //seznam.add(new Osoba("Jane", new RodnéČíslo("966126/0357")));
         vyplnPolicka(pozice);
+    }
+
+    private void zapisDataDoSouboru() {
+        FileOutputStream vystup;
+        ObjectOutputStream ovystup;
+        try {
+            vystup = new FileOutputStream(ULOZENADATA);
+            ovystup = new ObjectOutputStream(vystup);
+            // zapíšeme objekt do souboru
+            ovystup.writeObject(seznam);
+            ovystup.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void nactiDataZeSouboru() {
+        FileInputStream vstup;
+        ObjectInputStream ovstup;
+
+        try {
+            vstup = new FileInputStream(ULOZENADATA);
+            ovstup = new ObjectInputStream(vstup);
+            // načteme objekty ze souboru
+            seznam = (ArrayList<Osoba>) ovstup.readObject();
+            ovstup.close();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (java.io.EOFException ex) {
+            Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void vyplnPolicka(int i) {
@@ -28,7 +75,7 @@ public class HlavníOkno extends javax.swing.JFrame {
             jTextFieldJmeno.setText("");
             jTextFieldRC.setText("");
         }
-        jLabelPozice.setText(Integer.toString(pozice));
+        jLabelPozice.setText(Integer.toString(pozice)+"/"+(seznam.size()-1));
     }
 
     private void ulozPolicka(int i) {
@@ -155,6 +202,8 @@ public class HlavníOkno extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonKonecActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonKonecActionPerformed
+        ulozPolicka(pozice);
+        zapisDataDoSouboru();
         System.exit(0);
     }//GEN-LAST:event_jButtonKonecActionPerformed
 
@@ -180,10 +229,11 @@ public class HlavníOkno extends javax.swing.JFrame {
 
     private void jButtonDalsiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDalsiActionPerformed
         ulozPolicka(pozice);
-        if (pozice < seznam.size() - 1) // nejdeme za poslední člen
-        {
+        int size = seznam.size();
+        if (pozice < seznam.size() - 1) {
+            // nejdeme za poslední člen
             pozice++;
-        } else if (pozice == seznam.size() - 1) {
+        } else if (! jTextFieldJmeno.getText().isEmpty() && pozice == seznam.size() - 1) {
             // jdeme za poslední člen
             pozice++;
             // takový člen už není, takže políčka budou prázdná

@@ -1,6 +1,8 @@
 package main;
 
-class Osoba {
+import java.io.Serializable;
+
+class Osoba implements Serializable {
     
     String jmeno;
     RodnéČíslo rc;

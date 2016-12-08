@@ -1,12 +1,13 @@
 package main;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class RodnéČíslo {
+public class RodnéČíslo implements Serializable {
 
     String rc;
 
@@ -15,6 +16,7 @@ public class RodnéČíslo {
     }
 
     // aby šlo rodné číslo vypsat (předefinování implicitní metody toString())
+    @Override
     public String toString() {
         return rc;
     }
