@@ -48,21 +48,25 @@ public class HlavníOkno extends javax.swing.JFrame {
     private void nactiDataZeSouboru() {
         FileInputStream vstup;
         ObjectInputStream ovstup;
-
         try {
             vstup = new FileInputStream(ULOZENADATA);
             ovstup = new ObjectInputStream(vstup);
-            // načteme objekty ze souboru
+            // načteme celý ArrayList jako jeden objekt ze souboru
             seznam = (ArrayList<Osoba>) ovstup.readObject();
             ovstup.close();
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Soubor s daty nenalezen.");
+            //Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
         } catch (java.io.EOFException ex) {
             Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(HlavníOkno.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //když je prázdný seznam, potřebujeme alespon jeden prvek
+        if (seznam.size() < 1) {
+            seznam.add(new Osoba("", new RodnéČíslo("")));
         }
     }
 
@@ -75,7 +79,7 @@ public class HlavníOkno extends javax.swing.JFrame {
             jTextFieldJmeno.setText("");
             jTextFieldRC.setText("");
         }
-        jLabelPozice.setText(Integer.toString(pozice)+"/"+(seznam.size()-1));
+        jLabelPozice.setText(Integer.toString(pozice) + "/" + (seznam.size() - 1));
     }
 
     private void ulozPolicka(int i) {
@@ -228,16 +232,14 @@ public class HlavníOkno extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonPredchoziActionPerformed
 
     private void jButtonDalsiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonDalsiActionPerformed
-        ulozPolicka(pozice);
         int size = seznam.size();
         if (pozice < seznam.size() - 1) {
-            // nejdeme za poslední člen
+            ulozPolicka(pozice);
             pozice++;
-        } else if (! jTextFieldJmeno.getText().isEmpty() && pozice == seznam.size() - 1) {
-            // jdeme za poslední člen
+        } else if (pozice == seznam.size() - 1 && !jTextFieldJmeno.getText().isEmpty()) {
+            // další je když bylo něco vyplněno
+            ulozPolicka(pozice);
             pozice++;
-            // takový člen už není, takže políčka budou prázdná
-            vyplnPolicka(pozice);
         }
         vyplnPolicka(pozice);
     }//GEN-LAST:event_jButtonDalsiActionPerformed
