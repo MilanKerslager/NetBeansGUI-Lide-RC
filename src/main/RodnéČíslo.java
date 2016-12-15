@@ -20,12 +20,11 @@ public class RodnéČíslo implements Serializable {
     public String toString() {
         return rc;
     }
-    
+
     // změna rodného čísla
     public void setRC(String rc) {
         this.rc = rc;
     }
-    
 
     public boolean isMuž() {
         if (Integer.valueOf(rc.substring(2, 4)) <= 12) {
@@ -41,12 +40,12 @@ public class RodnéČíslo implements Serializable {
                 + rc.substring(0, 2);
     }
 
-    public boolean isOk() {
+    public static boolean isOk(String rcislo) {
         // rozebereme RC na jednotlivé části
         // TODO: ověřit kontrolu RČ se třemi ciframi za lomítkem
         String regex = "^\\s*(\\d\\d)(\\d\\d)(\\d\\d)[ /]*(\\d\\d\\d)(\\d?)\\s*$";
         Pattern p = Pattern.compile(regex);
-        Matcher m = p.matcher(rc);
+        Matcher m = p.matcher(rcislo);
         String rok, mesic, den, ext, kontrolni = null;
         if (m.find()) {
             rok = m.group(1);
@@ -62,7 +61,7 @@ public class RodnéČíslo implements Serializable {
         // kontrola dělitelnosti RČ
         int suma = 0;
         // FIXME: vyházet znaky podle regulárního výrazu
-        String rodne = rc.replaceAll("/", "");
+        String rodne = rcislo.replaceAll("/", "");
         for (int i = 0; i <= rodne.length() - 2; i++) {
             // vynecháme lomítka
             if (Character.isDigit(rodne.charAt(i)) == true) {
@@ -80,15 +79,17 @@ public class RodnéČíslo implements Serializable {
         if (zbytek == 10) {
             zbytek = 0;
         }
-        // zbytek po dělení by měl být roven kontrolní číslici
-        if (zbytek != Integer.parseInt(kontrolni)) {
-            // když není roven, je to chyba
-            return false;
-        }
 
         // doplnění století v roku (rok na 4 čísla)
         int celyrok = Integer.parseInt(rok);
-        celyrok += (celyrok < 54) ? 2000 : 1900;
+        if (kontrolni.isEmpty()) {
+            // do roku 1953 byla RČ krátká a narození muselo být 19??
+            celyrok += 1900;
+        } else {
+            // od roku 1954 byla RČ dlouhá a narození může být po r. 2000
+            // tj. od roku 2054 nejsou RČ definovaná
+            celyrok += (celyrok < 54) ? 2000 : 1900;
+        }
 
         // korekce měsíce (žena a další speciality zavedené po roce 2003)
         int mes = Integer.parseInt(mesic);
@@ -98,6 +99,23 @@ public class RodnéČíslo implements Serializable {
             mes -= 50;
         } else if (mes > 20 && celyrok > 2003) {
             mes -= 20;
+        }
+
+        // do roku 1953 není kontrolní číslice
+        if (celyrok < 1954 && ! kontrolni.isEmpty()) {
+            return false;
+        }
+
+        // od roku 1954 musí být kontrolní číslice
+        if (celyrok >= 1954 && kontrolni.isEmpty()) {
+            return false;
+        }
+
+        // když máme kontrolní číslici, tak by zbytek po dělení
+        // měl být roven kontrolní číslici
+        if (! kontrolni.isEmpty() && zbytek != Integer.parseInt(kontrolni)) {
+            // když není roven, je to chyba
+            return false;
         }
 
         // korigovaný měsíc musíme mít ve dvou cifrách (01, ... 12)

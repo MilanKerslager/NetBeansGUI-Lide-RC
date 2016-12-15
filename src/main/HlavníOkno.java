@@ -1,5 +1,6 @@
 package main;
 
+import java.awt.Color;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 
 public class HlavníOkno extends javax.swing.JFrame {
 
@@ -27,6 +30,16 @@ public class HlavníOkno extends javax.swing.JFrame {
         //seznam.add(new Osoba("René Hužva", new RodnéČíslo("966126/0356")));
         //seznam.add(new Osoba("Jane", new RodnéČíslo("966126/0357")));
         vyplnPolicka(pozice);
+        jTextFieldRC.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                if (RodnéČíslo.isOk(jTextFieldRC.getText())) {
+                    jTextFieldRC.setBackground(Color.white);
+                } else {
+                    jTextFieldRC.setBackground(Color.orange);
+                }
+            }
+        });
     }
 
     private void zapisDataDoSouboru() {
@@ -212,8 +225,7 @@ public class HlavníOkno extends javax.swing.JFrame {
     }//GEN-LAST:event_jButtonKonecActionPerformed
 
     private void jButtonKontrolaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonKontrolaActionPerformed
-        rc = new RodnéČíslo(jTextFieldRC.getText());
-        if (rc.isOk()) {
+        if (RodnéČíslo.isOk(jTextFieldRC.getText())) {
             JOptionPane.showMessageDialog(null, "Rodné číslo je v pořádku",
                     "Rodné číslo", JOptionPane.INFORMATION_MESSAGE);
         } else {
